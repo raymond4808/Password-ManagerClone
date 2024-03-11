@@ -6,6 +6,7 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
+#testing push commit
 def write_key(masterPass): #creates key from first time master password
     masterPass=b'masterPass'
     salt = os.urandom(16)
