@@ -1,6 +1,7 @@
 import base64
 import os
 import hashlib
+import re
 
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
@@ -43,41 +44,36 @@ def view(): #prints decrypted string of the site, username, password off of stor
             site = holder[0]
             user= holder[1]
             password=holder[2]
-            print("Site: " + site + "\nUsername: " + user + "\nPassword: " + fer.decrypt(password.encode()).decode()) #decrypt converts encrypted str to bytes then back to original readable str form
+            print("Site: " + site + "\nUsername: " + user + "\nPassword: " + fer.decrypt(password.encode()).decode() +"\n") #decrypt converts encrypted str to bytes then back to original readable str form
 
 def add(): #adds website, username, password to text file and encrypts the password
-    website= input('Site name: ')
+    website= input('Site name: ').capitalize()
     name=input('Login Name: ')
+    print ("Passwords must have a minimum requirement of: 6 characters long, contain 1 upper and lower case letter, one special character, and 1 numerical digit")
     pwd= input("Password: ")
+    while True:
+        if validPassCheck(pwd):
+            break
+        else:
+            print("Invalid Password Requirement, Please Try Again")
+            print("Passwords must have a minimum requirement of: 6 characters long, contain 1 upper and lower case letter, one special character, and 1 numerical digit.")
+            pwd = input("Password: ")
+
+    #left off here (working password validator)
+
     with open ('password.txt', 'a') as f: #open file and append with auto close
         f.write(website + '|' + name + '|' + fer.encrypt(pwd.encode()).decode() +'\n') #encrypt converts str password into bytes then into storable encrypt str form
 
+def validPassCheck(pwd):
+    regReq="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,25}$"
+    regPattern= re.compile(regReq)
+    checkPass= re.search(regPattern, pwd)
 
-if os.path.getsize('key.key') <= 0: #generates key and master password upon first intializing program
-    print("First time setup detected...")
-    masterPwd = input("Enter permanent master password to access password manager... \n")
-    write_key(masterPwd)
-    key = load_key()
-    fer = Fernet(key)
-    writeHashMasterPass(masterPwd)
-    print('Saved Master Password... Reinitializing program')
-
-with open ('master_pass.txt', 'r') as f: #pulls up the proper hashed saved password
-    storedMasterPass=f.read().strip()
-
-masterPwd = input("Enter master password to access password manager... \n") #prompts user to keep entering master password until correct of 'q' for quitting program
-while True:
-    if masterPwd =='q':
-        break
-
-    if storedMasterPass != hashPassword(masterPwd):
-        masterPwd = input("Enter the correct master password to access password manager or 'q' to quit... \n")
-
+    if checkPass:
+        print("Valid Password! Adding to password manager...")
+        return True
     else:
-        key = load_key()
-        fer = Fernet(key)
-        break
-
+        return False
 def passManagerStart():
     while True:
         mode= input("Enter 'view' to access existing passwords | 'add' to add a new password | 'q' to exit out of the program \n")
@@ -91,6 +87,33 @@ def passManagerStart():
             add()
         else:
             print("Enter invalid mode... please try again")
+
+#start up
+if os.path.getsize('key.key') <= 0: #generates key and master password upon first intializing program
+    print("First time setup detected...")
+    masterPwd = input("Enter permanent master password to access password manager... \n")
+    write_key(masterPwd)
+    key = load_key()
+    fer = Fernet(key)
+    writeHashMasterPass(masterPwd)
+    print('Saved Master Password... Reinitializing program')
+
+with open ('master_pass.txt', 'r') as f: #pulls up the proper hashed saved password
+    storedMasterPass=f.read().strip()
+
+masterPwd = input("Enter master password to access password manager... \n") #prompts user to keep entering master password until correct of 'q' for quitting program
+
+while True:
+    if masterPwd =='q':
+        break
+
+    if storedMasterPass != hashPassword(masterPwd):
+        masterPwd = input("Enter the correct master password to access password manager or 'q' to quit... \n")
+
+    else:
+        key = load_key()
+        fer = Fernet(key)
+        break
 
 if __name__ == '__main__':
     print('Password manager initializing')
