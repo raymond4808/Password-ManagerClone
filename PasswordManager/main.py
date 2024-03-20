@@ -59,12 +59,52 @@ def add(): #adds website, username, password to text file and encrypts the passw
             print("Passwords must have a minimum requirement of: 6 characters long, contain 1 upper and lower case letter, one special character, and 1 numerical digit.")
             pwd = input("Password: ")
 
-    #left off here (working password validator)
+
 
     with open ('password.txt', 'a') as f: #open file and append with auto close
         f.write(website + '|' + name + '|' + fer.encrypt(pwd.encode()).decode() +'\n') #encrypt converts str password into bytes then into storable encrypt str form
 
-def validPassCheck(pwd):
+def edit():
+    print("Please Confirm The Following Values for Editing:")
+    website= input("Site Name: ").capitalize()
+    username= input ("User Name: ")
+    pwd= input("Password: ")
+
+    with open ('password.txt', 'r+') as f: #open file and read with auto close
+        for line in f:
+            line.rstrip()
+            holder = line.split('|')
+            site = holder[0]
+            user = holder[1]
+            password=holder[2]
+            decrypPwd=fer.decrypt(password.encode()).decode()
+
+            if website == site and username == user and pwd == decrypPwd:
+                newPwd=""
+
+                print("Values confirmed! Please enter the following edited variables")
+                newWebsite= input("Edited Site Name: ")
+                newUsername = input("Edited User Name: ")
+                while True:
+                    if validPassCheck(pwd):
+                        break
+                    else:
+                        print("Invalid Password Requirement, Please Try Again")
+                        print(
+                            "Passwords must have a minimum requirement of: 6 characters long, contain 1 upper and lower case letter, one special character, and 1 numerical digit.")
+                        newPwd = input("Edited Password: ")
+
+                f.write(newWebsite + '|' + newUsername + '|' + fer.encrypt(newPwd.encode()).decode() + '\n')
+                break
+
+            else:
+                break
+        print("Following Values Do Not Match Our Database Info. Please Try Again...")
+
+    # left off here | need to troubleshoot comparing user input to output parsing txt file output
+    #pass
+
+def validPassCheck(pwd): #checks regular expression requirement to validate pass
     regReq="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,25}$"
     regPattern= re.compile(regReq)
     checkPass= re.search(regPattern, pwd)
@@ -76,7 +116,7 @@ def validPassCheck(pwd):
         return False
 def passManagerStart():
     while True:
-        mode= input("Enter 'view' to access existing passwords | 'add' to add a new password | 'q' to exit out of the program \n")
+        mode= input("Enter 'view' to access existing passwords | 'add' to add a new password | 'edit' to edit existing data | 'q' to exit out of the program \n")
         if mode == 'q':
             break
 
@@ -85,6 +125,8 @@ def passManagerStart():
 
         elif mode == "add":
             add()
+        elif mode == "edit":
+            edit()
         else:
             print("Enter invalid mode... please try again")
 
