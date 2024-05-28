@@ -58,19 +58,30 @@ def add(): #adds website, username, password to text file and encrypts the passw
             print("Invalid Password Requirement, Please Try Again")
             print("Passwords must have a minimum requirement of: 6 characters long, contain 1 upper and lower case letter, one special character, and 1 numerical digit.")
             pwd = input("Password: ")
-
-
-
     with open ('password.txt', 'a') as f: #open file and append with auto close
         f.write(website + '|' + name + '|' + fer.encrypt(pwd.encode()).decode() +'\n') #encrypt converts str password into bytes then into storable encrypt str form
 
 def edit():
-    print("Please Confirm The Following Values for Editing:")
-    website= input("Site Name: ").capitalize()
-    username= input ("User Name: ")
-    pwd= input("Password: ")
+    if os.path.getsize("password.txt") == 0:  # checks if the file is empty, if not proceeds forward
+        print("No passwords saved")
+        return
 
-    with open ('password.txt', 'r+') as f: #open file and read with auto close
+    existingInfo=""
+    if os.path.exists('password.txt'):
+        with open('password.txt', 'r') as f:
+            existingInfo= f.read()
+    #print(existingInfo)
+
+    with open ('password.txt', 'w+') as f: #open file and read with auto close
+        #CONTINUE HERE NEED TO TAKE EXISTING DATA AND CREATE SUB LISTS TO STORE IN TEMP LIST CHECK IF SUBLIST HAS MATCHING DATA FOR EDIT IF SO
+        #AUTHENTICATE CHECK THEN REPLACE SUBLIST DATA, AT END CONVERT SUBLIST BACK INTO DATA FOR TEXT FILE TO BE WRITTEN
+        f.write(existingInfo)
+        f.seek(0)
+        print("Please Confirm The Following Values for Editing:")
+        website = input("Site Name: ").capitalize()
+        username = input("User Name: ")
+        pwd = input("Password: ")
+
         for line in f:
             line.rstrip()
             holder = line.split('|')
@@ -78,15 +89,16 @@ def edit():
             user = holder[1]
             password=holder[2]
             decrypPwd=fer.decrypt(password.encode()).decode()
+            #print(holder)
+            #print(site + user + decrypPwd)
 
             if website == site and username == user and pwd == decrypPwd:
-                newPwd=""
-
                 print("Values confirmed! Please enter the following edited variables")
                 newWebsite= input("Edited Site Name: ")
                 newUsername = input("Edited User Name: ")
+                newPwd=input("New Edited Password:")
                 while True:
-                    if validPassCheck(pwd):
+                    if validPassCheck(newPwd):
                         break
                     else:
                         print("Invalid Password Requirement, Please Try Again")
@@ -95,13 +107,15 @@ def edit():
                         newPwd = input("Edited Password: ")
 
                 f.write(newWebsite + '|' + newUsername + '|' + fer.encrypt(newPwd.encode()).decode() + '\n')
+
                 break
 
-            else:
-                break
-        print("Following Values Do Not Match Our Database Info. Please Try Again...")
 
-    # left off here | need to troubleshoot comparing user input to output parsing txt file output
+            print("Following Values Do Not Match Our Database Info. Please Try Again...")
+            break
+
+
+    # left off here | need to troubleshoot comparing user input to output parsing txt file output (refer to above)
     #pass
 
 def validPassCheck(pwd): #checks regular expression requirement to validate pass
