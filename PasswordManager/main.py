@@ -62,21 +62,28 @@ def add(): #adds website, username, password to text file and encrypts the passw
         f.write(website + '|' + name + '|' + fer.encrypt(pwd.encode()).decode() +'\n') #encrypt converts str password into bytes then into storable encrypt str form
 
 def edit():
+    """ #testing password data backup
+    Google|tester|gAAAAABmVhlLefiVqpbdaxgPUr6GD61TwDtcpfFvOLmdnYUCnTGN8pHALftoxEG9XAVbF-SBVWWYvxEE_nYIQxrklwuqTjcACA==
+Googler1|tester|gAAAAABmVhlataRYJYHP1iBrjufv36q4umfsoilp0F8T4DgSwsWhdV5z5biMRn5-lq_LmfH5d2BCQoYaQJcqyNxlDvWbIc5hwQ==
+
+    """
+    tempList=[]
+
     if os.path.getsize("password.txt") == 0:  # checks if the file is empty, if not proceeds forward
         print("No passwords saved")
         return
 
     existingInfo=""
     if os.path.exists('password.txt'):
-        with open('password.txt', 'r') as f:
+        with open('password.txt', 'r+') as f:
             existingInfo= f.read()
     #print(existingInfo)
 
-    with open ('password.txt', 'w+') as f: #open file and read with auto close
+    with open ('password.txt', 'r+') as f: #open file and read with auto close
         #CONTINUE HERE NEED TO TAKE EXISTING DATA AND CREATE SUB LISTS TO STORE IN TEMP LIST CHECK IF SUBLIST HAS MATCHING DATA FOR EDIT IF SO
         #AUTHENTICATE CHECK THEN REPLACE SUBLIST DATA, AT END CONVERT SUBLIST BACK INTO DATA FOR TEXT FILE TO BE WRITTEN
-        f.write(existingInfo)
-        f.seek(0)
+        #f.write(existingInfo)
+        #f.seek(0)
         print("Please Confirm The Following Values for Editing:")
         website = input("Site Name: ").capitalize()
         username = input("User Name: ")
@@ -89,9 +96,17 @@ def edit():
             user = holder[1]
             password=holder[2]
             decrypPwd=fer.decrypt(password.encode()).decode()
+            tempList.append([site,user,decrypPwd])
             #print(holder)
+            print(tempList)
             #print(site + user + decrypPwd)
 
+        #sets pointer back to zero and clears the data
+        f.seek(0)
+        f.truncate()
+
+        #continue here to extract data from tempList to confirm authenticate temp data in sub list and replace it if correct THEN write data back into textfile
+        """
             if website == site and username == user and pwd == decrypPwd:
                 print("Values confirmed! Please enter the following edited variables")
                 newWebsite= input("Edited Site Name: ")
@@ -113,10 +128,12 @@ def edit():
 
             print("Following Values Do Not Match Our Database Info. Please Try Again...")
             break
+            """
 
 
     # left off here | need to troubleshoot comparing user input to output parsing txt file output (refer to above)
     #pass
+
 
 def validPassCheck(pwd): #checks regular expression requirement to validate pass
     regReq="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,25}$"
