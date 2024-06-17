@@ -63,10 +63,10 @@ def add(): #adds website, username, password to text file and encrypts the passw
 
 def edit():
     """ #testing password data backup
-    Google|tester|gAAAAABmVhlLefiVqpbdaxgPUr6GD61TwDtcpfFvOLmdnYUCnTGN8pHALftoxEG9XAVbF-SBVWWYvxEE_nYIQxrklwuqTjcACA==
+Google|tester|gAAAAABmVhlLefiVqpbdaxgPUr6GD61TwDtcpfFvOLmdnYUCnTGN8pHALftoxEG9XAVbF-SBVWWYvxEE_nYIQxrklwuqTjcACA==
 Googler1|tester|gAAAAABmVhlataRYJYHP1iBrjufv36q4umfsoilp0F8T4DgSwsWhdV5z5biMRn5-lq_LmfH5d2BCQoYaQJcqyNxlDvWbIc5hwQ==
-
     """
+    changed = False
     tempList=[]
 
     if os.path.getsize("password.txt") == 0:  # checks if the file is empty, if not proceeds forward
@@ -80,15 +80,6 @@ Googler1|tester|gAAAAABmVhlataRYJYHP1iBrjufv36q4umfsoilp0F8T4DgSwsWhdV5z5biMRn5-
     #print(existingInfo)
 
     with open ('password.txt', 'r+') as f: #open file and read with auto close
-        #CONTINUE HERE NEED TO TAKE EXISTING DATA AND CREATE SUB LISTS TO STORE IN TEMP LIST CHECK IF SUBLIST HAS MATCHING DATA FOR EDIT IF SO
-        #AUTHENTICATE CHECK THEN REPLACE SUBLIST DATA, AT END CONVERT SUBLIST BACK INTO DATA FOR TEXT FILE TO BE WRITTEN
-        #f.write(existingInfo)
-        #f.seek(0)
-        print("Please Confirm The Following Values for Editing:")
-        website = input("Site Name: ").capitalize()
-        username = input("User Name: ")
-        pwd = input("Password: ")
-
         for line in f:
             line.rstrip()
             holder = line.split('|')
@@ -97,21 +88,23 @@ Googler1|tester|gAAAAABmVhlataRYJYHP1iBrjufv36q4umfsoilp0F8T4DgSwsWhdV5z5biMRn5-
             password=holder[2]
             decrypPwd=fer.decrypt(password.encode()).decode()
             tempList.append([site,user,decrypPwd])
-            #print(holder)
-            print(tempList)
-            #print(site + user + decrypPwd)
 
         #sets pointer back to zero and clears the data
         f.seek(0)
         f.truncate()
+        #print(tempList) #TS
+        print("Please Confirm The Following Values for Editing:")
+        website = input("Site Name: ").capitalize()
+        username = input("User Name: ")
+        pwd = input("Password: ")
 
-        #continue here to extract data from tempList to confirm authenticate temp data in sub list and replace it if correct THEN write data back into textfile
-        """
-            if website == site and username == user and pwd == decrypPwd:
+        for i in tempList:
+            if i[0] == website and i[1]==username and i[2] == pwd:
+                changed = True
                 print("Values confirmed! Please enter the following edited variables")
-                newWebsite= input("Edited Site Name: ")
+                newWebsite = input("Edited Site Name: ").capitalize()
                 newUsername = input("Edited User Name: ")
-                newPwd=input("New Edited Password:")
+                newPwd = input("New Edited Password:")
                 while True:
                     if validPassCheck(newPwd):
                         break
@@ -120,20 +113,24 @@ Googler1|tester|gAAAAABmVhlataRYJYHP1iBrjufv36q4umfsoilp0F8T4DgSwsWhdV5z5biMRn5-
                         print(
                             "Passwords must have a minimum requirement of: 6 characters long, contain 1 upper and lower case letter, one special character, and 1 numerical digit.")
                         newPwd = input("Edited Password: ")
-
-                f.write(newWebsite + '|' + newUsername + '|' + fer.encrypt(newPwd.encode()).decode() + '\n')
-
+                i[0] = newWebsite
+                i[1] = newUsername
+                i[2] = newPwd
                 break
 
+            else:
+                continue
+        if changed == False:
+            print("The entered values do not match what we have on record try again")
+        else:
+            print("Exiting password editor")
 
-            print("Following Values Do Not Match Our Database Info. Please Try Again...")
-            break
-            """
-
-
-    # left off here | need to troubleshoot comparing user input to output parsing txt file output (refer to above)
-    #pass
-
+        with open ('password.txt', 'a') as f:
+            for i in tempList:
+                currSite= i[0]
+                currName = i[1]
+                currPass= i[2]
+                f.write(currSite + '|' + currName + '|' + fer.encrypt(currPass.encode()).decode() +'\n')
 
 def validPassCheck(pwd): #checks regular expression requirement to validate pass
     regReq="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,25}$"
@@ -141,7 +138,7 @@ def validPassCheck(pwd): #checks regular expression requirement to validate pass
     checkPass= re.search(regPattern, pwd)
 
     if checkPass:
-        print("Valid Password! Adding to password manager...")
+        print("Valid Password! Adding/Updating to password manager...")
         return True
     else:
         return False
@@ -151,12 +148,12 @@ def passManagerStart():
         if mode == 'q':
             break
 
-        if mode == "view":
+        if mode == "view" or mode == "v" or mode == "V":
             view()
 
-        elif mode == "add":
+        elif mode == "add" or mode == "a" or mode == "A":
             add()
-        elif mode == "edit":
+        elif mode == "edit" or mode == "e" or mode == "E":
             edit()
         else:
             print("Enter invalid mode... please try again")
